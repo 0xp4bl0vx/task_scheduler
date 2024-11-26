@@ -19,7 +19,7 @@ some tasks depend on others; that is, certain tasks cannot begin until the tasks
 - completed (bool)
 
 ## Functions:
-- enter_tasks() -> Create tasks and store them in an array, max 500 tasks
+- create_tasks() -> Create tasks and store them in an array, max 500 tasks
 - execute_tasks() -> Execute tasks by priority, shortest execution time and smallest id, taking into account dependencies
 - status() -> Show if tasks are completed
 - report() -> Show report of the execution

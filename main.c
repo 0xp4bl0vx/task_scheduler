@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+const int MAX_TASKS = 500;
+
 // Custom data type for tasks
 typedef struct {
     int id;
@@ -18,20 +20,23 @@ typedef struct {
 
 /*
  * The first argument is a pointer to an array of Task datatype
- * create_tasks and executes tasks return values by reference
+ * create_tasks and executes_tasks return values by reference
+ * All the prints must be inside if statements that check the user_mode variable
  */
 
-void create_tasks(Task *tasks, int *tasks_size);
-void execute_tasks(Task *tasks, int tasks_size, int *execution_time);
-void status(Task *tasks, int tasks_size);
-void report(Task *tasks, int tasks_size, int execution_time);
+void create_tasks(Task *tasks, int *tasks_num);
+void execute_tasks(Task *tasks, int tasks_num, int *execution_time);
+void status(Task *tasks, int tasks_num);
+void report(Task *tasks, int tasks_num, int execution_time);
+// void c_printf(char *string[], int *args[], int args_num, bool user_mode);
 
 int main() {
     // Variables
-    int tasks_size = 0, execution_time = 0;
+    int tasks_num = 0, execution_time = 0;
+    bool user_mode = true;
 
     // Array of structs for storing the tasks
-    Task tasks[500];
+    Task tasks[MAX_TASKS];
 
     /*
     * If you need to test functions remember to clear the main before doing the commit

@@ -17,7 +17,7 @@ some tasks depend on others; that is, certain tasks cannot begin until the tasks
 - priority (1-25, 1 higher) (int)
 - dependencies (task_id's, -1 for no dependencies) (int array)
 - completed (bool)
-- - weight (used for sorting tasks)
+- weight (used for sorting tasks)
 
 ## Functions:
 - create_tasks() -> Create tasks and store them in an array, max 500 tasks

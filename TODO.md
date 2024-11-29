@@ -10,6 +10,6 @@
 
 ## Functions
 - [ ] create_tasks()
-- [ ] execute_tasks()
+- [X] execute_tasks()
 - [ ] status()
 - [ ] report()

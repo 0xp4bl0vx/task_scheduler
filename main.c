@@ -13,10 +13,13 @@ typedef struct {
     int id;
     int duration;
     int priority;
-    int dependencies[499];
+    int dependencies[MAX_TASKS - 1];
     bool completed;
     double weight;
 } Task;
+
+// Enum for the different modes, makes the code easier to read
+enum mode {user = 0, judge};
 
 // Functions
 
@@ -26,16 +29,15 @@ typedef struct {
  * All the prints must be inside if statements that check the user_mode variable
  */
 
-void create_tasks(Task *tasks, int *tasks_num);
-void execute_tasks(Task *tasks, int tasks_num, int *execution_time);
-void status(Task *tasks, int tasks_num);
-void report(Task *tasks, int tasks_num, int execution_time);
-// void c_printf(char *string[], int *args[], int args_num, bool user_mode);
+void create_tasks(Task *tasks, int *tasks_num, int mode);
+void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode);
+void status(Task *tasks, int tasks_num, int mode);
+void report(Task *tasks, int tasks_num, int execution_time, int mode);
 
 int main() {
     // Variables
     int tasks_num = 0, execution_time = 0;
-    bool user_mode = true;
+    int mode = user;
 
     // Array of structs for storing the tasks
     Task tasks[MAX_TASKS];
@@ -49,7 +51,7 @@ int main() {
     return 0;
 }
 
-void execute_tasks(Task *tasks, int tasks_num, int *execution_time) {
+void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
     /*
      * To order the task, the bubble algorithm is used. Bubble consist in
      * comparing each element of the array with the previous element. If
@@ -74,7 +76,9 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time) {
             // If the task has more priority than the dependencies a new weight is calculated
             // The new weight is the weight of the dependency and the task weight as the decimal part
             if (tasks[i].dependencies[j] <= tasks_num) {
-                if (tasks[i].weight < tasks[tasks[i].dependencies[j]].weight && new_weight < tasks[tasks[i].dependencies[j]].weight) {
+                if (tasks[i].weight < tasks[tasks[i].dependencies[j]].weight && new_weight < tasks[tasks[i].dependencies[j]].weight
+                    && !tasks[tasks[i].dependencies[j]].completed && tasks[i].dependencies[j] != tasks[i].id) {
+
                     new_weight = tasks[tasks[i].dependencies[j]].weight + tasks[i].weight * pow(10, -9);
                 }
             } else {
@@ -104,10 +108,12 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time) {
 
     for (int i = 0; i < tasks_num; i++) {
         if (!tasks[i].completed && tasks[i].weight > 0) {
-            printf("Task %d started...\n", tasks[i].id);
-            printf("Task %d completed in %d seconds.\n", tasks[i].id, tasks[i].duration);
+            if (mode == user) {
+                printf("Task %d started...\n", tasks[i].id);
+                printf("Task %d completed in %d seconds.\n", tasks[i].id, tasks[i].duration);
+            }
+            tasks[i].completed = true;
             *execution_time += tasks[i].duration;
         }
-        // Judge Output
     }
 }

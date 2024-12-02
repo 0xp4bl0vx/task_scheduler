@@ -63,7 +63,6 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time) {
     // For each task the weight is calculated and the execution time is added to the total
     for (int i = 0; i < tasks_num; i++) {
         tasks[i].weight = (tasks[i].priority * pow(10, 7) + tasks[i].duration * pow(10, 3) + tasks[i].id) * !tasks[i].completed;
-        *execution_time += tasks[i].duration;
     }
 
     // To order the tasks taking into account the dependencies a new weight is calculated
@@ -74,8 +73,12 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time) {
         while (tasks[i].dependencies[j] != -1) {
             // If the task has more priority than the dependencies a new weight is calculated
             // The new weight is the weight of the dependency and the task weight as the decimal part
-            if (tasks[i].weight < tasks[tasks[i].dependencies[j]].weight && new_weight < tasks[tasks[i].dependencies[j]].weight) {
-                new_weight = tasks[tasks[i].dependencies[j]].weight + tasks[i].weight * pow(10, -9);
+            if (tasks[i].dependencies[j] <= tasks_num) {
+                if (tasks[i].weight < tasks[tasks[i].dependencies[j]].weight && new_weight < tasks[tasks[i].dependencies[j]].weight) {
+                    new_weight = tasks[tasks[i].dependencies[j]].weight + tasks[i].weight * pow(10, -9);
+                }
+            } else {
+                new_weight = -1;
             }
             j++;
         }
@@ -97,5 +100,14 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time) {
                 sorted = false;
             }
         }
+    }
+
+    for (int i = 0; i < tasks_num; i++) {
+        if (!tasks[i].completed && tasks[i].weight > 0) {
+            printf("Task %d started...\n", tasks[i].id);
+            printf("Task %d completed in %d seconds.\n", tasks[i].id, tasks[i].duration);
+            *execution_time += tasks[i].duration;
+        }
+        // Judge Output
     }
 }

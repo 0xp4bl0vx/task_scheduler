@@ -1,6 +1,6 @@
 # TODO list
 - [X] Setup main
-- [ ] User mode and judge mode
+- [X] User mode and judge mode
 - [ ] Code functions
 - [ ] Code menu
 - [ ] Testing

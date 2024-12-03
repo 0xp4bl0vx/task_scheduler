@@ -46,8 +46,6 @@ int main() {
     * If you need to test functions remember to clear the main before doing the commit
     * or test the function in another file
     */
-
-    //Menu goes here
     return 0;
 }
 

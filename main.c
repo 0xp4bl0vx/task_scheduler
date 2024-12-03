@@ -6,14 +6,14 @@
 #include <stdbool.h>
 #include <math.h>
 
-const int MAX_TASKS = 500;
+#define MAX_TASKS 500
 
 // Custom data type for tasks
 typedef struct {
     int id;
     int duration;
     int priority;
-    int dependencies[MAX_TASKS - 1];
+    int dependencies[MAX_TASKS];
     bool completed;
     double weight;
 } Task;

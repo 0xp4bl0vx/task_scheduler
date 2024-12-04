@@ -6,14 +6,14 @@
 #include <stdbool.h>
 #include <math.h>
 
-const int MAX_TASKS = 500;
+#define MAX_TASKS 500
 
 // Custom data type for tasks
 typedef struct {
     int id;
     int duration;
     int priority;
-    int dependencies[MAX_TASKS - 1];
+    int dependencies[MAX_TASKS];
     bool completed;
     double weight;
 } Task;
@@ -112,6 +112,101 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
             }
             tasks[i].completed = true;
             *execution_time += tasks[i].duration;
+        }
+    }
+}
+
+void create_tasks(Task *tasks, int *tasks_num, int mode) {
+    // First, the function asks the user for the number of tasks
+
+    do{
+        if (mode == user) {
+            printf("Enter the total number of tasks: ");
+        }
+        scanf("%d", tasks_num);
+        if (*tasks_num > MAX_TASKS && mode == user) {
+            printf("The maximum number of tasks is 500. Try again.\n");
+        }
+    }while(*tasks_num > MAX_TASKS);
+
+    // Then, it assigns an ID to each task and prompts the user
+    // to enter their corresponding duration and priority
+
+    //  ID assignment
+    for (int i = 0; i < *tasks_num; i++) {
+        tasks[i].id = i;
+    }
+
+    for (int i=0; i< *tasks_num; i++) {
+        if (user == mode) {
+            printf("For task with ID #%d\n", tasks[i].id);
+        }
+
+    //Duration assignment
+    do{
+        if (mode == user) {
+            printf("\tEnter task duration (in seconds, must be positive): ");
+        }
+        scanf("%d", &tasks[i].duration);
+        if ((tasks[i].duration >= 1000 && mode == user) || (tasks[i].duration < 0 && mode == user) ) {
+            printf("\tThe maximum duration for a task is 1000 seconds. Also, it must be positive. Try again.\n");
+        }
+    }while( (tasks[i].duration >= 1000 && mode == user)  ||  (tasks[i].duration < 0 && mode == user) );
+
+
+    //Priority assignment
+    do{
+        if (mode == user) {
+            printf("\tEnter task priority (lower values indicate higher priority): ");
+        }
+
+        scanf("%d", &tasks[i].priority);
+        if (tasks[i].priority > 25 || tasks[i].priority < 1 && mode == user) {
+            printf("That priority level is not valid. Try again.\n");
+        }
+    }while(tasks[i].priority > 25 || tasks[i].priority < 1);
+    }
+
+    /*
+     * Now, the functions requests a dependency list
+     * for each task, that will be stored in an array
+     * independent for every task
+     */
+
+    for (int i = 0; i < *tasks_num; i++) {
+        int k=0;
+        if (mode == user) {
+            printf("Enter dependencies for task %d (end with -1): ", tasks[i].id);
+        }
+
+        while (k < MAX_TASKS) {
+            int dependency_id;
+            scanf("%d", &dependency_id);
+
+            if (dependency_id == -1) {
+                tasks[i].dependencies[k] = -1; // Marking the end of the dependencies
+                break;
+            }
+
+            // Checking if the dependency ID is valid
+            int valid = 0;
+            for (int j = 0; j < *tasks_num; j++) {
+                if (tasks[j].id == dependency_id) {
+                    valid = 1;
+                    break;
+                }
+            }
+
+            // If it's not valid, the program goes to the next iteration of the while statement,
+            // skipping the assigning part
+            if (!valid) {
+                printf("Invalid dependency. Task ID %d does not exist. Please try again.\n", dependency_id);
+                continue;
+            }
+
+            // Assigning a valid dependency
+            tasks[i].dependencies[k] = dependency_id;
+            k++;
         }
     }
 }

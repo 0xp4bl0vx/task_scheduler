@@ -135,6 +135,7 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
     //  ID assignment
     for (int i = 0; i < *tasks_num; i++) {
         tasks[i].id = i;
+        tasks[i].completed = false;
     }
 
     for (int i=0; i< *tasks_num; i++) {

@@ -151,7 +151,7 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
         if ((tasks[i].duration >= 1000 && mode == user) || (tasks[i].duration < 0 && mode == user) ) {
             printf("\tThe maximum duration for a task is 1000 seconds. Also, it must be positive. Try again.\n");
         }
-    }while( (tasks[i].duration >= 1000 && mode == user)  ||  (tasks[i].duration < 0 && mode == user) );
+    }while( (tasks[i].duration >= 1000 )  ||  (tasks[i].duration < 0) );
 
 
     //Priority assignment
@@ -200,7 +200,9 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
             // If it's not valid, the program goes to the next iteration of the while statement,
             // skipping the assigning part
             if (!valid) {
+                if (mode == user){
                 printf("Invalid dependency. Task ID %d does not exist. Please try again.\n", dependency_id);
+                }
                 continue;
             }
 

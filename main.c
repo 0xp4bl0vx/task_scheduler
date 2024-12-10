@@ -229,11 +229,11 @@ void status(Task *tasks, int tasks_num, int mode) {
             }
 
             int j=0;
-            //if the dependency in the slot 0 is -1 it shows that it's not complete
+            //if the dependency in the slot 0 is -1 it shows that it doesn't have dependencies
             if (tasks[i].dependencies[j] == -1) {
                 printf("Dependencies: none\n ");
             }
-            //if it's not the case, each dependency is printed until -1 is detected
+            //if it has them, each dependency is printed until -1 is detected
             else {
                 printf("Dependencies: ");
                 while ((tasks[i].dependencies[j] == -1)) {

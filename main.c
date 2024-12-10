@@ -213,3 +213,35 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
         }
     }
 }
+void status(Task *tasks, int tasks_num, int mode) {
+    //This function shows the status of each task
+    if (mode == user) {
+        for(int i; i< tasks_num; i++) {
+
+            printf("\tTask #%d - ", tasks[i].id);
+            printf("Priority: %d, ", tasks[i].priority);
+
+            if (tasks[i].completed == true) {
+                printf("Status: completed, ");
+            }
+            else {
+                printf("Status: pending, ");
+            }
+
+            int j=0;
+            //if the dependency in the slot 0 is -1 it shows that it's not complete
+            if (tasks[i].dependencies[j] == -1) {
+                printf("Dependencies: none\n ");
+            }
+            //if it's not the case, each dependency is printed until -1 is detected
+            else {
+                printf("Dependencies: ");
+                while ((tasks[i].dependencies[j] == -1)) {
+                    printf("%d, ", tasks[i].dependencies[j]);
+                    j++;
+                }
+                printf("\n");
+            }
+        }
+    }
+}

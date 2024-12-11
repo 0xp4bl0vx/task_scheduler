@@ -19,7 +19,7 @@ typedef struct {
 } Task;
 
 // Enum for the different modes, makes the code easier to read
-enum mode {user = 0, judge};
+enum mode {user, judge = 0};
 
 // Functions
 
@@ -28,6 +28,7 @@ enum mode {user = 0, judge};
  * create_tasks and executes_tasks return values by reference
  * All the prints must be inside if statements that check the user_mode variable
  */
+
 
 void create_tasks(Task *tasks, int *tasks_num, int mode);
 void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode);
@@ -38,15 +39,44 @@ int main() {
     // Variables
     int tasks_num = 0, execution_time = 0;
     int mode = user;
+    int option = 0;
 
     // Array of structs for storing the tasks
     Task tasks[MAX_TASKS];
+
+    scanf("%d", &mode);
+
+    while (1) {
+        printf("Menu:\n");
+        printf("1. Enter tasks\n");
+        printf("2. Execute task scheduling\n");
+        printf("3. Show the status of all tasks\n");
+        printf("4. View results report\n");
+        printf("5. Exit\n");
+        printf("Choose an option: ");
+        scanf(" %d", &option);
+        switch (option) {
+            case 1:
+                create_tasks(tasks, &tasks_num, mode);
+            break;
+            case 2:
+                execute_tasks(tasks, tasks_num, &execution_time, mode);
+            break;
+            case 3:
+                status(tasks, tasks_num, mode);
+            break;
+            case 4:
+                report(tasks, tasks_num, execution_time, mode);
+            break;
+            default:
+                return 0;
+        }
+    }
 
     /*
     * If you need to test functions remember to clear the main before doing the commit
     * or test the function in another file
     */
-    return 0;
 }
 
 void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
@@ -118,7 +148,6 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
 
 void create_tasks(Task *tasks, int *tasks_num, int mode) {
     // First, the function asks the user for the number of tasks
-
     do{
         if (mode == user) {
             printf("Enter the total number of tasks: ");
@@ -244,4 +273,33 @@ void status(Task *tasks, int tasks_num, int mode) {
             }
         }
     }
+}
+void report(Task *tasks, int tasks_num, int execution_time, int mode) {
+    int time = 0;
+    for(int i; i< tasks_num; i++) {
+        if (tasks[i].completed == true) {
+            time += tasks[i].duration;
+        }
+    }
+    if (mode == user) {
+        printf("Total time: %d seconds.\n", time);
+        printf("Completed tasks: ");
+    } else {
+        printf("%d\n", time);
+    }
+    for (int i = 0; i < tasks_num; i++) {
+        if (tasks[i].completed == true) {
+            printf("%d ", tasks[i].id);
+        }
+    }
+    printf("\n");
+    if (mode == user) {
+        printf("Uncompleted tasks: ");
+    };
+    for (int i = 0; i < tasks_num; i++) {
+        if (tasks[i].completed != true) {
+            printf("Task %d: ", tasks[i].id);
+        }
+    }
+    printf("\n");
 }

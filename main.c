@@ -15,11 +15,12 @@ typedef struct {
     int priority;
     int dependencies[MAX_TASKS];
     bool completed;
+    bool can_be_executed;
     double weight;
 } Task;
 
 // Enum for the different modes, makes the code easier to read
-enum mode {user, judge = 0};
+enum mode {judge = 0, user};
 
 // Functions
 
@@ -46,48 +47,47 @@ int main() {
 
     scanf("%d", &mode);
 
-    while (1) {
-        printf("Menu:\n");
-        printf("1. Enter tasks\n");
-        printf("2. Execute task scheduling\n");
-        printf("3. Show the status of all tasks\n");
-        printf("4. View results report\n");
-        printf("5. Exit\n");
-        printf("Choose an option: ");
+    while (option != 5) {
+        if (mode == user) {
+            printf("Menu:\n");
+            printf("1. Enter tasks\n");
+            printf("2. Execute task scheduling\n");
+            printf("3. Show the status of all tasks\n");
+            printf("4. View results report\n");
+            printf("5. Exit\n");
+            printf("Choose an option: ");
+        }
         scanf(" %d", &option);
         switch (option) {
             case 1:
                 create_tasks(tasks, &tasks_num, mode);
-            break;
+                break;
             case 2:
                 execute_tasks(tasks, tasks_num, &execution_time, mode);
-            break;
+                break;
             case 3:
                 status(tasks, tasks_num, mode);
-            break;
+                break;
             case 4:
                 report(tasks, tasks_num, execution_time, mode);
-            break;
+                break;
             default:
-                return 0;
         }
     }
 
-    /*
-    * If you need to test functions remember to clear the main before doing the commit
-    * or test the function in another file
-    */
+    if (mode == user) {
+        printf("Thank you for using the task scheduling simulator...");
+    }
 }
 
 void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
     /*
-     * To order the task, the bubble algorithm is used. Bubble consist in
-     * comparing each element of the array with the previous element. If
-     * the element is smaller, the element position is changed with the
-     * previous one. This process is repeated until the array is sorted
-     * As this algorithm uses a list of arrays, each task hash a weight
-     * based on priority, duration and id. If it is completed the
-     * weight is 0.
+     * To order the task, each element of the array is compared with the
+     * previous element. If the element is smaller, the element position
+     * is changed with the previous one. This process is repeated until
+     * the array is sorted. Each task has a weight based on priority,
+     * duration and id. If it is impossible to execute the task the weight
+     * is a big number calculated with the id, for the array to order correctly.
      */
 
     // For each task the weight is calculated and the execution time is added to the total
@@ -98,24 +98,33 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
     // To order the tasks taking into account the dependencies a new weight is calculated
     for (int i = 0; i < tasks_num; i++) {
         int j = 0;
-        double new_weight = 0;
         // Check if task has dependencies
         while (tasks[i].dependencies[j] != -1) {
+
+            // Detects is the task is dependency of his dependency, if it is a special weight is assigned.
+            int k = 0;
+            while (tasks[tasks[i].dependencies[j]].dependencies[k] != -1) {
+                if (tasks[tasks[i].dependencies[j]].dependencies[k] == i || !tasks[tasks[i].dependencies[j]].can_be_executed) {
+                    tasks[i].weight = tasks[i].id * pow(10, 8);
+                    tasks[i].can_be_executed = false;
+                }
+                k++;
+            }
+
+            // If the task cant be executed, stop ordering by dependencies
+            if (!tasks[i].can_be_executed) {break;}
+
             // If the task has more priority than the dependencies a new weight is calculated
             // The new weight is the weight of the dependency and the task weight as the decimal part
-            if (tasks[i].dependencies[j] <= tasks_num) {
-                if (tasks[i].weight < tasks[tasks[i].dependencies[j]].weight && new_weight < tasks[tasks[i].dependencies[j]].weight
-                    && !tasks[tasks[i].dependencies[j]].completed && tasks[i].dependencies[j] != tasks[i].id) {
+            if (tasks[i].weight < tasks[tasks[i].dependencies[j]].weight && !tasks[tasks[i].dependencies[j]].completed
+                && tasks[i].dependencies[j] != tasks[i].id) {
 
-                    new_weight = tasks[tasks[i].dependencies[j]].weight + tasks[i].weight * pow(10, -9);
-                }
-            } else {
-                new_weight = -1;
+                // Replace the original weight with the new weight
+                tasks[i].weight = tasks[tasks[i].dependencies[j]].weight + tasks[i].weight * pow(10, -9);
             }
             j++;
+
         }
-        // Replace the original weight with the new weight
-        tasks[i].weight = new_weight;
     }
 
     // Start the sorting of the array
@@ -135,13 +144,13 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
     }
 
     for (int i = 0; i < tasks_num; i++) {
-        if (!tasks[i].completed && tasks[i].weight > 0) {
-            if (mode == user) {
-                printf("Task %d started...\n", tasks[i].id);
-                printf("Task %d completed in %d seconds.\n", tasks[i].id, tasks[i].duration);
-            }
+        if (!tasks[i].completed && tasks[i].weight < pow(10, 8)) {
             tasks[i].completed = true;
             *execution_time += tasks[i].duration;
+            if (mode == user) {
+                printf("Task %d started...\n", tasks[i].id);
+                printf("Task %d completed in %d seconds.\n", tasks[i].id, *execution_time);
+            }
         }
     }
 }
@@ -156,45 +165,43 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
         if (*tasks_num > MAX_TASKS && mode == user) {
             printf("The maximum number of tasks is 500. Try again.\n");
         }
-    }while(*tasks_num > MAX_TASKS);
+    } while (*tasks_num > MAX_TASKS);
 
     // Then, it assigns an ID to each task and prompts the user
     // to enter their corresponding duration and priority
 
-    //  ID assignment
-    for (int i = 0; i < *tasks_num; i++) {
+    for (int i = 0; i< *tasks_num; i++) {
         tasks[i].id = i;
         tasks[i].completed = false;
-    }
+        tasks[i].can_be_executed = true;
 
-    for (int i=0; i< *tasks_num; i++) {
         if (user == mode) {
             printf("For task with ID #%d\n", tasks[i].id);
         }
 
-    //Duration assignment
-    do{
-        if (mode == user) {
-            printf("\tEnter task duration (in seconds, must be positive): ");
-        }
-        scanf("%d", &tasks[i].duration);
-        if ((tasks[i].duration >= 1000 && mode == user) || (tasks[i].duration < 0 && mode == user) ) {
-            printf("\tThe maximum duration for a task is 1000 seconds. Also, it must be positive. Try again.\n");
-        }
-    }while( (tasks[i].duration >= 1000 )  ||  (tasks[i].duration < 0) );
+        //Duration assignment
+        do{
+            if (mode == user) {
+                printf("\tEnter task duration (in seconds, must be positive): ");
+            }
+            scanf("%d", &tasks[i].duration);
+            if (tasks[i].duration >= 1000 || tasks[i].duration < 0 && mode == user) {
+                printf("\tThe maximum duration for a task is 1000 seconds. Also, it must be positive. Try again.\n");
+            }
+        } while (tasks[i].duration >= 1000 || tasks[i].duration < 0 );
 
 
-    //Priority assignment
-    do{
-        if (mode == user) {
-            printf("\tEnter task priority (lower values indicate higher priority): ");
-        }
+        //Priority assignment
+        do{
+            if (mode == user) {
+                printf("\tEnter task priority (lower values indicate higher priority): ");
+            }
 
-        scanf("%d", &tasks[i].priority);
-        if (tasks[i].priority > 25 || tasks[i].priority < 1 && mode == user) {
-            printf("That priority level is not valid. Try again.\n");
-        }
-    }while(tasks[i].priority > 25 || tasks[i].priority < 1);
+            scanf("%d", &tasks[i].priority);
+            if (tasks[i].priority > 25 || tasks[i].priority < 1 && mode == user) {
+                printf("That priority level is not valid. Try again.\n");
+            }
+        } while (tasks[i].priority > 25 || tasks[i].priority < 1);
     }
 
     /*
@@ -204,7 +211,7 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
      */
 
     for (int i = 0; i < *tasks_num; i++) {
-        int k=0;
+        int k = 0;
         if (mode == user) {
             printf("Enter dependencies for task %d (end with -1): ", tasks[i].id);
         }
@@ -242,31 +249,25 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
         }
     }
 }
+
 void status(Task *tasks, int tasks_num, int mode) {
     //This function shows the status of each task
     if (mode == user) {
-        for(int i; i< tasks_num; i++) {
+        for(int i = 0; i< tasks_num; i++) {
 
             printf("\tTask #%d - ", tasks[i].id);
             printf("Priority: %d, ", tasks[i].priority);
-
-            if (tasks[i].completed == true) {
-                printf("Status: completed, ");
-            }
-            else {
-                printf("Status: pending, ");
-            }
-
-            int j=0;
+            printf("Status: %s, ", tasks[i].completed ? "completed" : "pending");
+            printf("Dependencies: ");
+            int j = 0;
             //if the dependency in the slot 0 is -1 it shows that it doesn't have dependencies
             if (tasks[i].dependencies[j] == -1) {
-                printf("Dependencies: none\n ");
+                printf("none\n ");
             }
             //if it has them, each dependency is printed until -1 is detected
             else {
-                printf("Dependencies: ");
-                while ((tasks[i].dependencies[j] == -1)) {
-                    printf("%d, ", tasks[i].dependencies[j]);
+                while (tasks[i].dependencies[j] != -1) {
+                    printf("%d ", tasks[i].dependencies[j]);
                     j++;
                 }
                 printf("\n");
@@ -274,18 +275,13 @@ void status(Task *tasks, int tasks_num, int mode) {
         }
     }
 }
+
 void report(Task *tasks, int tasks_num, int execution_time, int mode) {
-    int time = 0;
-    for(int i; i< tasks_num; i++) {
-        if (tasks[i].completed == true) {
-            time += tasks[i].duration;
-        }
-    }
     if (mode == user) {
-        printf("Total time: %d seconds.\n", time);
+        printf("Total time: %d seconds.\n", execution_time);
         printf("Completed tasks: ");
     } else {
-        printf("%d\n", time);
+        printf("%d\n", execution_time);
     }
     for (int i = 0; i < tasks_num; i++) {
         if (tasks[i].completed == true) {
@@ -295,10 +291,10 @@ void report(Task *tasks, int tasks_num, int execution_time, int mode) {
     printf("\n");
     if (mode == user) {
         printf("Uncompleted tasks: ");
-    };
+    }
     for (int i = 0; i < tasks_num; i++) {
-        if (tasks[i].completed != true) {
-            printf("Task %d: ", tasks[i].id);
+        if (tasks[i].completed == false) {
+            printf("%d ", tasks[i].id);
         }
     }
     printf("\n");

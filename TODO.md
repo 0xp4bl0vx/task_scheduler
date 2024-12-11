@@ -1,15 +1,15 @@
 # TODO list
 - [X] Setup main
 - [X] User mode and judge mode
-- [ ] Code functions
+- [X] Code functions
 - [x] Code menu
-- [ ] Testing
-- [ ] Debug
+- [X] Testing
+- [X] Debug
 - [ ] Testing
 - [ ] Release
 
 ## Functions
-- [ ] create_tasks()
+- [X] create_tasks()
 - [X] execute_tasks()
-- [ ] status()
-- [x] report()
+- [X] status()
+- [X] report()

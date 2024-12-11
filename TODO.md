@@ -2,7 +2,7 @@
 - [X] Setup main
 - [X] User mode and judge mode
 - [ ] Code functions
-- [ ] Code menu
+- [x] Code menu
 - [ ] Testing
 - [ ] Debug
 - [ ] Testing
@@ -12,4 +12,4 @@
 - [ ] create_tasks()
 - [X] execute_tasks()
 - [ ] status()
-- [ ] report()
+- [x] report()

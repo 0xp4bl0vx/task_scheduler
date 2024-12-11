@@ -71,7 +71,6 @@ int main() {
             case 4:
                 report(tasks, tasks_num, execution_time, mode);
                 break;
-            default:
         }
     }
 

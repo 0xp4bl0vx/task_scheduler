@@ -276,7 +276,7 @@ void status(Task *tasks, int tasks_num, int mode) {
 }
 void report(Task *tasks, int tasks_num, int execution_time, int mode) {
     int time = 0;
-    for(int i; i< tasks_num; i++) {
+    for(int i = 0; i< tasks_num; i++) {
         if (tasks[i].completed == true) {
             time += tasks[i].duration;
         }
@@ -298,7 +298,7 @@ void report(Task *tasks, int tasks_num, int execution_time, int mode) {
     };
     for (int i = 0; i < tasks_num; i++) {
         if (tasks[i].completed != true) {
-            printf("Task %d: ", tasks[i].id);
+            printf("%d ", tasks[i].id);
         }
     }
     printf("\n");

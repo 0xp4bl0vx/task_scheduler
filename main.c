@@ -15,7 +15,6 @@ typedef struct {
     int priority;
     int dependencies[MAX_TASKS];
     bool completed;
-    bool can_be_executed;
     double weight;
 } Task;
 
@@ -32,15 +31,18 @@ enum mode {judge = 0, user};
 
 
 void create_tasks(Task *tasks, int *tasks_num, int mode);
-void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode);
+void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int executed[], int *executed_tasks, int mode);
+void dependencies_weights(Task *tasks, int i);
 void status(Task *tasks, int tasks_num, int mode);
-void report(Task *tasks, int tasks_num, int execution_time, int mode);
+void report(Task *tasks, int tasks_num, int execution_time, int executed[], int executed_tasks, int mode);
 
 int main() {
     // Variables
     int tasks_num = 0, execution_time = 0;
     int mode = user;
     int option = 0;
+    int executed[MAX_TASKS]; // For storing the order of the tasks that can be executed
+    int executed_tasks = 0;
 
     // Array of structs for storing the tasks
     Task tasks[MAX_TASKS];
@@ -63,13 +65,13 @@ int main() {
                 create_tasks(tasks, &tasks_num, mode);
                 break;
             case 2:
-                execute_tasks(tasks, tasks_num, &execution_time, mode);
+                execute_tasks(tasks, tasks_num, &execution_time, executed, &executed_tasks,mode);
                 break;
             case 3:
                 status(tasks, tasks_num, mode);
                 break;
             case 4:
-                report(tasks, tasks_num, execution_time, mode);
+                report(tasks, tasks_num, execution_time, executed, executed_tasks, mode);
                 break;
         }
     }
@@ -79,51 +81,21 @@ int main() {
     }
 }
 
-void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
+void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int executed[], int *executed_tasks, int mode) {
     /*
      * To order the task, each element of the array is compared with the
      * previous element. If the element is smaller, the element position
      * is changed with the previous one. This process is repeated until
      * the array is sorted. Each task has a weight based on priority,
-     * duration and id. If it is impossible to execute the task the weight
-     * is a big number calculated with the id, for the array to order correctly.
+     * duration and id. Then execute the tasks checking if there are
+     * uncompleted dependencies. The executed array contains the index
+     * of each completed task in the tasks array.
      */
 
-    // For each task the weight is calculated and the execution time is added to the total
+    // For each task the weight is calculated
     for (int i = 0; i < tasks_num; i++) {
-        tasks[i].weight = (tasks[i].priority * pow(10, 7) + tasks[i].duration * pow(10, 3) + tasks[i].id) * !tasks[i].completed;
-    }
-
-    // To order the tasks taking into account the dependencies a new weight is calculated
-    for (int i = 0; i < tasks_num; i++) {
-        int j = 0;
-        // Check if task has dependencies
-        while (tasks[i].dependencies[j] != -1) {
-
-            // Detects is the task is dependency of his dependency, if it is a special weight is assigned.
-            int k = 0;
-            while (tasks[tasks[i].dependencies[j]].dependencies[k] != -1) {
-                if (tasks[tasks[i].dependencies[j]].dependencies[k] == i || !tasks[tasks[i].dependencies[j]].can_be_executed) {
-                    tasks[i].weight = tasks[i].id * pow(10, 8);
-                    tasks[i].can_be_executed = false;
-                }
-                k++;
-            }
-
-            // If the task cant be executed, stop ordering by dependencies
-            if (!tasks[i].can_be_executed) {break;}
-
-            // If the task has more priority than the dependencies a new weight is calculated
-            // The new weight is the weight of the dependency and the task weight as the decimal part
-            if (tasks[i].weight < tasks[tasks[i].dependencies[j]].weight && !tasks[tasks[i].dependencies[j]].completed
-                && tasks[i].dependencies[j] != tasks[i].id) {
-
-                // Replace the original weight with the new weight
-                tasks[i].weight = tasks[tasks[i].dependencies[j]].weight + tasks[i].weight * pow(10, -9);
-            }
-            j++;
-
-        }
+        tasks[i].weight = (tasks[i].priority * pow(10,7) + tasks[i].duration * pow(10, 3)
+            + tasks[i].id) * !tasks[i].completed;
     }
 
     // Start the sorting of the array
@@ -142,13 +114,39 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int mode) {
         }
     }
 
-    for (int i = 0; i < tasks_num; i++) {
-        if (!tasks[i].completed && tasks[i].weight < pow(10, 8)) {
-            tasks[i].completed = true;
-            *execution_time += tasks[i].duration;
-            if (mode == user) {
-                printf("Task %d started...\n", tasks[i].id);
-                printf("Task %d completed in %d seconds.\n", tasks[i].id, *execution_time);
+    // Tries to execute tasks until no changes are made in an iteration
+    bool finish = false;
+    while (!finish) {
+        finish = true;
+        // For each task check if it is completed
+        for (int i = 0; i < tasks_num; i++) {
+            if (!tasks[i].completed) {
+                int j = 0;
+                bool can_be_executed = true;
+                // Check if dependencies are completed, if not the task can be executed
+                while (tasks[i].dependencies[j] != -1) {
+                    for (int k = 0; k < tasks_num; k++) {
+                        if (tasks[k].id == tasks[i].dependencies[j] && !tasks[k].completed) {
+                            can_be_executed = false;
+                        }
+                    }
+                    j++;
+                }
+
+                // If it can be executed add it to executed array, add its duration and check it as completed
+                if (can_be_executed) {
+                    executed[*executed_tasks] = i;
+                    (*executed_tasks)++;
+                    tasks[i].completed = true;
+                    *execution_time += tasks[i].duration;
+                    finish = false;
+
+                    if (mode == user) {
+                        printf("Task %d started...", tasks[i].id);
+                        printf("Task %d completed in %d seconds.", tasks[i].id, *execution_time);
+                    }
+                    break;
+                }
             }
         }
     }
@@ -169,10 +167,9 @@ void create_tasks(Task *tasks, int *tasks_num, int mode) {
     // Then, it assigns an ID to each task and prompts the user
     // to enter their corresponding duration and priority
 
-    for (int i = 0; i< *tasks_num; i++) {
+    for (int i = 0; i < *tasks_num; i++) {
         tasks[i].id = i;
         tasks[i].completed = false;
-        tasks[i].can_be_executed = true;
 
         if (user == mode) {
             printf("For task with ID #%d\n", tasks[i].id);
@@ -275,26 +272,30 @@ void status(Task *tasks, int tasks_num, int mode) {
     }
 }
 
-void report(Task *tasks, int tasks_num, int execution_time, int mode) {
+void report(Task *tasks, int tasks_num, int execution_time, int executed[], int executed_tasks, int mode) {
     if (mode == user) {
         printf("Total time: %d seconds.\n", execution_time);
         printf("Completed tasks: ");
     } else {
         printf("%d\n", execution_time);
     }
-    for (int i = 0; i < tasks_num; i++) {
-        if (tasks[i].completed == true) {
-            printf("%d ", tasks[i].id);
-        }
+    for (int i = 0; i < executed_tasks; i++) {
+        printf("%d ", tasks[executed[i]].id);
     }
     printf("\n");
     if (mode == user) {
         printf("Uncompleted tasks: ");
     }
-    for (int i = 0; i < tasks_num; i++) {
-        if (tasks[i].completed == false) {
-            printf("%d ", tasks[i].id);
+
+    // Prints each of the uncompleted tasks ordered by id
+    int id = 0;
+    while (id < tasks_num) {
+        for (int i = 0; i < tasks_num; i++) {
+            if (tasks[i].id == id && !tasks[i].completed) {
+                printf("%d ", tasks[i].id);
+            }
         }
+        id++;
     }
     printf("\n");
 }

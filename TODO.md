@@ -5,8 +5,8 @@
 - [x] Code menu
 - [X] Testing
 - [X] Debug
-- [ ] Testing
-- [ ] Release
+- [X] Testing
+- [X] Release
 
 ## Functions
 - [X] create_tasks()

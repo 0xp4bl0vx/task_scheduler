@@ -32,7 +32,6 @@ enum mode {judge = 0, user};
 
 void create_tasks(Task *tasks, int *tasks_num, int mode);
 void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int executed[], int *executed_tasks, int mode);
-void dependencies_weights(Task *tasks, int i);
 void status(Task *tasks, int tasks_num, int mode);
 void report(Task *tasks, int tasks_num, int execution_time, int executed[], int executed_tasks, int mode);
 

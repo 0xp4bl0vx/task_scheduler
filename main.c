@@ -122,7 +122,7 @@ void execute_tasks(Task *tasks, int tasks_num, int *execution_time, int executed
             if (!tasks[i].completed) {
                 int j = 0;
                 bool can_be_executed = true;
-                // Check if dependencies are completed, if not the task can be executed
+                // Check if dependencies are completed, if not the task cannot be executed
                 while (tasks[i].dependencies[j] != -1) {
                     for (int k = 0; k < tasks_num; k++) {
                         if (tasks[k].id == tasks[i].dependencies[j] && !tasks[k].completed) {
